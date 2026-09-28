@@ -56,4 +56,30 @@ public class CasoDeUsoCadastrarCliente
             };
         }
     }
+
+    public async Task<ClienteDto> AtualizarSaldoClienteAsync(ClienteDto clienteDto)
+    {
+        var existente = await _repositorio.ObterPorGuidAsync(clienteDto.Id);
+        if (existente == null)
+            throw new InvalidOperationException("Cliente não encontrado");
+
+        var retorno = await _repositorio.AtualizarSaldo(new Domain.Entities.Cliente()
+        {
+
+            Id = clienteDto.Id,
+            CPF = clienteDto.CPF,
+            Nome = clienteDto.Nome,
+            ValorLimite = clienteDto.ValorLimite
+        });
+
+        _cache.Remove("clientes:todos");
+
+        return new ClienteDto
+        {
+            Id = retorno.Id,
+            Nome = retorno.Nome,
+            CPF = retorno.CPF,
+            ValorLimite = retorno.ValorLimite
+        };
+    }
 }

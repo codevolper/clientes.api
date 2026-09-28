@@ -49,4 +49,29 @@ public class ClientesController : ControllerBase
         });
         return Ok(dtos);
     }
+
+    [HttpGet("{Id}")]
+    [ServiceFilter(typeof(ValidarTokenAttribute))]
+    public async Task<IActionResult> ObterCliente(Guid Id)
+    {
+        var lista = await _casoListar.ListarClientesAsync();
+        
+        var dto = lista.Where(c => c.Id == Id).Select(c => new ClienteDto
+        {
+            Id = c.Id,
+            Nome = c.Nome,
+            CPF = c.CPF,
+            ValorLimite = c.ValorLimite
+        }).FirstOrDefault();
+
+        return Ok(dto);
+    }
+
+    [HttpPatch("atualizar-saldo")]
+    [ServiceFilter(typeof(ValidarTokenAttribute))]
+    public async Task<IActionResult> AtualizarSaldo(Guid Id, decimal valor)
+    {
+       var retorno = await _casoCadastrar.AtualizarSaldoClienteAsync(new ClienteDto() { Id = Id, ValorLimite = valor });
+        return Ok(retorno);
+    }
 }

@@ -42,10 +42,10 @@ public class ClientesRepositorio : IClienteRepositorio
         return Task.FromResult<IEnumerable<Cliente>>(lista);
     }
 
-    public Task<Cliente?> ObterPorCPFAsync(string email)
+    public Task<Cliente?> ObterPorCPFAsync(string cpf)
     {
         var tabela = _db.GetTable("Clientes");
-        var row = tabela.Rows.Cast<DataRow>().FirstOrDefault(r => string.Equals(r["CPF"]?.ToString(), email, StringComparison.OrdinalIgnoreCase));
+        var row = tabela.Rows.Cast<DataRow>().FirstOrDefault(r => string.Equals(r["CPF"]?.ToString(), cpf, StringComparison.OrdinalIgnoreCase));
 
         if (row == null)
             return Task.FromResult<Cliente?>(null);
@@ -59,5 +59,41 @@ public class ClientesRepositorio : IClienteRepositorio
         };
 
         return Task.FromResult<Cliente?>(cliente);
-    } 
+    }
+
+
+    public Task<Cliente?> ObterPorGuidAsync(Guid Id)
+    {
+        var tabela = _db.GetTable("Clientes");
+        var row = tabela.Rows.Cast<DataRow>().FirstOrDefault(r => (Guid)r["Id"] == Id);
+
+        if (row == null)
+            return Task.FromResult<Cliente?>(null);
+
+        var cliente = new Cliente
+        {
+            Id = (Guid)row["Id"],
+            Nome = row["Nome"].ToString() ?? string.Empty,
+            CPF = row["CPF"].ToString() ?? string.Empty,
+            ValorLimite = (decimal)row["ValorLimite"]
+        };
+
+        return Task.FromResult<Cliente?>(cliente);
+    }
+
+    public Task<Cliente> AtualizarSaldo(Cliente cliente)
+    {
+        var tabela = _db.GetTable("Clientes");
+        var row = tabela.Rows.Cast<DataRow>().FirstOrDefault(r => (Guid)r["Id"] == cliente.Id);
+
+        if (row == null)
+            throw new InvalidOperationException($"Cliente with Id {cliente.Id} not found.");
+
+        row["ValorLimite"] = (decimal)row["ValorLimite"] - cliente.ValorLimite;
+        tabela.AcceptChanges();
+
+        cliente.ValorLimite = (decimal)row["ValorLimite"];
+
+        return Task.FromResult(cliente);
+    }
 }

@@ -9,4 +9,8 @@ public interface IClienteRepositorio
     Task<IEnumerable<Cliente>> ListarTodosAsync();
 
     Task<Cliente?> ObterPorCPFAsync(string email);
+
+    Task<Cliente?> ObterPorGuidAsync(Guid Id);
+
+    Task<Cliente> AtualizarSaldo(Cliente cliente);
 }
